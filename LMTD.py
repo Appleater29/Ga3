@@ -3,25 +3,6 @@ import matplotlib.pyplot as plt
 
 from fixed_constants import *
 
-# N = 13
-# N_b = 9
-# d_o = 0.008 # meters
-# d_i = 0.006 # meters
-# d_noz = 0.02 # meters
-# d_sh = 0.064 # meters
-# L = 0.35 # meters
-# Y = 0.014 # meters
-# T1_in = 20 #degrees
-# T2_in = 60 #degrees 
-# cp = 4179 #J/kgK
-# rho_w = 990.1 #kg/ms
-# k_w = 0.632 #W/mK
-# mu = 6.51e-4 #kg/ms
-# Pr = 4.31 
-# k_tube = 386 #W/mK
-# F = 1
-# c = 0.15 # square to match example
-
 def find_H (Re_sh, Re_tube, L, c = 0.15 ):
     Nu_i = 0.023*((Re_tube)**0.8)*(Pr**0.3)
     Nu_o = c*(Re_sh**0.6)*(Pr**0.3)
@@ -63,23 +44,19 @@ def correction_factor(T1_out, shell_passes):
             return y0 + (y1 - y0) * (x - x0) / (x1 - x0) 
 
 def fT1_out(T1_out, H, A, mdot_1, mdot_2):
-        F = 1
         CF = correction_factor(T1_out)
         T2_out = T2_in - (mdot_1/mdot_2)*(T1_out-T1_in)
         T_lm = logmtemp(T1_out, T2_out)
-        return mdot_1*cp*(T1_out-T1_in)-H*A*T_lm*F
+        return mdot_1*cp*(T1_out-T1_in)-H*A*T_lm*CF
 
 
 def log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c=0.15):
     A = (np.pi)*N*d_i*L
     H = find_H(Re_sh, Re_tube, L, c)
     T1_out_max = T2_in - 5
-    # T1_out_max = T2_in - 1
     T1_out_min = T1_in + 5
-    # T1_out_min = T1_in + 1
     
     # find T1_out by iteration:
-
     if T1_out_max == T1_out_min:
         print("Temperatures too close")
 

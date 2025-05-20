@@ -1,21 +1,6 @@
 import numpy as np
 from fixed_constants import *
 
-# # design variables
-# N = 13 # less than 56
-# N_b = 9 
-# a = 0.34 # 0.2 for triangular or 0.34 for square pitch
-# B = L / (N_b + 1)
-
-# # areas
-# A_tube = np.pi * 0.25 * d_i**2
-# A_noz = np.pi * 0.25 * d_noz**2
-# A_pipe = np.pi * 0.25 * d_sh**2
-# A_sh = d_sh * (Y - d_o) * B / Y
-# A_hose = np.pi * 0.25 * 0.025**2
-
-# sigma = N * A_tube / A_pipe
-
 def hydraulic_cold(m1_dot, N, N_b, L, a, shell_passes):
     B = L / (N_b + 1)
     A_sh = d_sh * (Y - d_o) * B / (Y*shell_passes)
@@ -32,7 +17,7 @@ def hydraulic_cold(m1_dot, N, N_b, L, a, shell_passes):
     k_hose = 15840 / (0.5 * rho_w * v_hose_max**2)
     v_hose = m1_dot / (rho_w * A_hose)
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
-    
+
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
 
     return(delta_p_1, Re_sh)
@@ -71,11 +56,6 @@ def K_e(x):
     else:
         raise ValueError("sigma too high, check number of tubes")
 
-# def cold_chic(x):
-#     # return pressure drop 1 given mass flow rate 1
-#     return(1e5*(-0.4914*x**2 - 0.3966*x + 0.6612)) # 2023 chic
-#     # return(1e5*(-0.7691*x**2 - 0.3763*x + 0.6555)) # 2024 chic
-#     # return(1e5*(-0.5557*x**2 - 0.4559*x + 0.7049)) # 2025 chic   
 
 def cold_chic(x, year=2025):
     """Return compressor cold-side pressure drop (Pa) for given mass flow rate x (L/s), based on year."""
@@ -90,11 +70,6 @@ def cold_chic(x, year=2025):
     else:
         raise ValueError("Unsupported year for cold_chic. Choose 2022, 2023, 2024, or 2025.")
 
-# def hot_chic(x):
-#     # return pressure drop 2 given mass flow rate 2
-#     return(1e5*(-0.8204*x**2 - 0.6777*x + 0.5626)) # 2023 chic
-#     # return(1e5*(-0.8117*x**2 - 0.6792*x + 0.6145)) # 2024 chic
-#     # return(1e5*(-1.2312*x**2 - 0.6973*x + 0.6251)) # 2025 chic
 
 def hot_chic(x, year=2025):
     """Return compressor hot-side pressure drop (Pa) for given mass flow rate x (L/s), based on year."""
@@ -150,8 +125,6 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
             return x_mid  # Exact root found
     delta_p = hydraulic_cold(x_mid, N, N_b, L, a, shell_passes)[0]
     print("hot pressure:", delta_p)
-    # print("hot pressure:", hot_chic(x_mid))
-    # print("cold pressure:", cold_chic(x_mid))
 
     return 0.5 * (x_min + x_max)
 
