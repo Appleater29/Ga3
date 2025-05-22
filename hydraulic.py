@@ -1,7 +1,12 @@
 import numpy as np
 from fixed_constants import *
 
-def hydraulic_cold(m1_dot, N, N_b, L, a, shell_passes):
+def hydraulic_cold_old(m1_dot, N, N_b, L, shell_passes, layout="tri"):
+    if layout == 'tri':
+        a = 0.2
+    elif layout == 'square':
+        a = 0.34
+    
     B = L / (N_b + 1)
     A_sh = d_sh * (Y - d_o) * B / (Y*shell_passes)
     # cold stream
@@ -19,10 +24,43 @@ def hydraulic_cold(m1_dot, N, N_b, L, a, shell_passes):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
+    print(delta_p_1)
 
     return(delta_p_1, Re_sh)
 
-def hydraulic_hot(m2_dot, N, L, passes, shell_passes):
+def hydraulic_cold_Kern(m1_dot, N, N_b, L, shell_passes, layout="tri"):
+    # cold stream
+    B = L / (N_b + 1)
+    A_sh = d_sh * (Y - d_o) * B / (Y*shell_passes) # not sure if shell passes are needed
+    v_sh = m1_dot / (rho_w * A_sh)
+
+    if layout == "square":
+        D_e = (4 * (Y**2 - (np.pi * d_o**2 / 4))) / (np.pi * d_o)
+    elif layout == "tri":
+        D_e = (4 * ((Y**2 * np.sqrt(3) / 4) - (np.pi * d_o**2 / 8))) / (np.pi * d_o / 2)
+    else:
+        raise ValueError("Layout must be 'square' or 'triangular'")
+    
+    Re_sh = rho_w * v_sh * D_e / mu
+
+    G_s = m1_dot / A_sh
+    f = np.exp(0.576 - 0.19 * np.log(Re_sh))
+    delta_p_sh = f * G_s**2 * (N_b  + 1) * d_sh / (2 * rho_w * D_e)
+
+    v_noz1 = m1_dot / (rho_w * A_noz)
+    delta_p_noz1 = rho_w * v_noz1**2
+
+    v_hose_max = 0.658 / (rho_w * A_hose)
+    k_hose = 15840 / (0.5 * rho_w * v_hose_max**2)
+    v_hose = m1_dot / (rho_w * A_hose)
+    delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
+    
+    delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
+    print(delta_p_1)
+
+    return(delta_p_1, Re_sh)
+
+def hydraulic_hot_old(m2_dot, N, L, passes, shell_passes):
     # hot stream
     sigma = N * (A_tube/passes) / (A_pipe/shell_passes)
     mtube_dot = m2_dot / N
@@ -40,7 +78,30 @@ def hydraulic_hot(m2_dot, N, L, passes, shell_passes):
     v_hose = m2_dot / (rho_w * A_hose)
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
-    delta_p_2 = delta_p_tube + delta_p_ends + delta_p_noz2 + delta_p_hose
+    delta_p_2 = (delta_p_tube + delta_p_ends) * passes + delta_p_noz2 + delta_p_hose
+    print(delta_p_2)
+
+    return(delta_p_2, Re_tube)
+
+def hydraulic_hot_Kern(m2_dot, N, L, passes, shell_passes):
+    # hot stream
+    mtube_dot = m2_dot / N
+    v_tube = mtube_dot / (rho_w * A_tube)
+    Re_tube = rho_w * v_tube * d_i / mu
+
+    v_noz2 = m2_dot / (rho_w * A_noz)
+
+    f = (1.58*np.log(Re_tube) - 3.28)**(-2)
+    delta_p_tot = 2*passes*(f*L/d_i + 1)*(rho_w*v_tube**2)
+    delta_p_noz2 = rho_w * v_noz2**2
+
+    v_hose_max = 0.436 / (rho_w * A_hose)
+    k_hose = 9320 / (0.5 * rho_w * v_hose_max**2)
+    v_hose = m2_dot / (rho_w * A_hose)
+    delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
+
+    delta_p_2 = delta_p_tot + delta_p_noz2 + delta_p_hose
+    print(delta_p_2)
 
     return(delta_p_2, Re_tube)
 
@@ -91,11 +152,11 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
     # Define the appropriate error function
     if side == "cold":
         def error(x):
-            delta_p = hydraulic_cold(x, N, N_b, L, a, shell_passes)[0]
+            delta_p = hydraulic_cold_Kern(x, N, N_b, L, a, shell_passes)[0]
             return(delta_p - cold_chic(x, year))
     elif side == "hot":
         def error(x):
-            delta_p = hydraulic_hot(x, N, L, passes, shell_passes)[0]
+            delta_p = hydraulic_hot_Kern(x, N, L, passes, shell_passes)[0]
             return(delta_p - hot_chic(x, year))
     else:
         raise ValueError("Invalid side. Use 'cold' or 'hot'.")
@@ -123,7 +184,7 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
             f_max = f_mid
         else:
             return x_mid  # Exact root found
-    delta_p = hydraulic_cold(x_mid, N, N_b, L, a, shell_passes)[0]
+    delta_p = hydraulic_cold_Kern(x_mid, N, N_b, L, a, shell_passes)[0]
     print("hot pressure:", delta_p)
 
     return 0.5 * (x_min + x_max)
