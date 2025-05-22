@@ -15,7 +15,9 @@ d_i = 0.006 # meters
 d_noz = 0.02 # meters
 d_sh = 0.064 # meters
 # L = 0.35 # meters
-Y = 0.014 # meters
+Y = d_o * 1.5 # meters (can also times 1.25)
+# optimal baffle spacing should be between 0.4 and 0.6 of d_sh
+# optimal baffle cut should be between 0.25 and 0.35
 
 # constant areas
 A_tube = np.pi * 0.25 * d_i**2
