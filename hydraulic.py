@@ -2,6 +2,7 @@ import numpy as np
 from fixed_constants import *
 
 def hydraulic_cold_old(m1_dot, N, N_b, L, shell_passes, layout="tri"):
+    # print(layout, "here")
     if layout == 'tri':
         a = 0.2
     elif layout == 'square':
@@ -24,7 +25,7 @@ def hydraulic_cold_old(m1_dot, N, N_b, L, shell_passes, layout="tri"):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
-    print(delta_p_1)
+    # print(delta_p_1)
 
     return(delta_p_1, Re_sh)
 
@@ -56,7 +57,7 @@ def hydraulic_cold_Kern(m1_dot, N, N_b, L, shell_passes, layout="tri"):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
     
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
-    print(delta_p_1)
+    # print(delta_p_1)
 
     return(delta_p_1, Re_sh)
 
@@ -79,7 +80,7 @@ def hydraulic_hot_old(m2_dot, N, L, passes, shell_passes):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_2 = (delta_p_tube + delta_p_ends) * passes + delta_p_noz2 + delta_p_hose
-    print(delta_p_2)
+    # print(delta_p_2)
 
     return(delta_p_2, Re_tube)
 
@@ -101,7 +102,7 @@ def hydraulic_hot_Kern(m2_dot, N, L, passes, shell_passes):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_2 = delta_p_tot + delta_p_noz2 + delta_p_hose
-    print(delta_p_2)
+    # print(delta_p_2)
 
     return(delta_p_2, Re_tube)
 
@@ -152,11 +153,11 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
     # Define the appropriate error function
     if side == "cold":
         def error(x):
-            delta_p = hydraulic_cold_Kern(x, N, N_b, L, a, shell_passes)[0]
+            delta_p = hydraulic_cold_old(x, N, N_b, L, shell_passes, layout="tri")[0]
             return(delta_p - cold_chic(x, year))
     elif side == "hot":
         def error(x):
-            delta_p = hydraulic_hot_Kern(x, N, L, passes, shell_passes)[0]
+            delta_p = hydraulic_hot_old(x, N, L, passes, shell_passes)[0]
             return(delta_p - hot_chic(x, year))
     else:
         raise ValueError("Invalid side. Use 'cold' or 'hot'.")
@@ -184,8 +185,10 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
             f_max = f_mid
         else:
             return x_mid  # Exact root found
-    delta_p = hydraulic_cold_Kern(x_mid, N, N_b, L, a, shell_passes)[0]
-    print("hot pressure:", delta_p)
+    delta_p1 = hydraulic_cold_old(x_mid, N, N_b, L, shell_passes,  layout = "tri")[0]
+    print("cold pressure:", delta_p1)
+    delta_p2 = hydraulic_hot_old(x_mid, N, L, passes, shell_passes)[0]
+    print("hot pressure:", delta_p2)
 
     return 0.5 * (x_min + x_max)
 

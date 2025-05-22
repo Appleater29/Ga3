@@ -1,11 +1,12 @@
-from hydraulic import hydraulic_cold, hydraulic_hot, hydraulic_iteration
+from hydraulic import hydraulic_cold_old, hydraulic_hot_old, hydraulic_iteration
 from LMTD import log_thermal
 from NTU import NTU_method, find_C_r
 import numpy as np
 
 
 def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
-    if arrange == "triangular":
+    # print(arrange)
+    if arrange == "tri":
         c = 0.15
         a = 0.2
     elif arrange == "sqaure":
@@ -17,8 +18,8 @@ def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
     print("mass flow rate 1:", mdot_1)
     mdot_2 = hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, 0.05, 0.65, side="hot")
     print("mass flow rate 2:", mdot_2)
-    Re_sh = hydraulic_cold(mdot_1, N, N_b, L, a, shell_passes)[1]
-    Re_tube = hydraulic_hot(mdot_2, N, L, passes, shell_passes)[1]
+    Re_sh = hydraulic_cold_old(mdot_1, N, N_b, L, shell_passes, layout = "tri")[1]
+    Re_tube = hydraulic_hot_old(mdot_2, N, L, passes, shell_passes)[1]
     if Tmethod == "ntu":
         eff = NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, passes, shell_passes)
     elif Tmethod == "lmtd":
@@ -56,12 +57,12 @@ def find_mass(N, N_b, passes, shell_passes, L):
     m_other = 0.01
     m = m_tubes + m_nozzles + m_shell + m_endcaps + m_tubesheets + m_o_rings + m_baffles +  m_splitters + m_other
     # print(m_baffles, m_endcaps, m_nozzles, m_o_rings, m_other, m_shell, m_splitters, m_tubes, m_tubesheets)
-    # m = 0.5
+    m = 0.5
     # print(m)
     return m
 
 
-def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1], arrange = "triangular",Tmethod = "ntu", M = 1.2, year = 2025):
+def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1], arrange = "tri",Tmethod = "ntu", M = 1.2, year = 2025):
     design_dict = {}
     for N in N_list:
         for N_b in N_b_list:
@@ -71,6 +72,7 @@ def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1
                         d_parameters = (N, N_b, passes, shell_passes, arrange, L)
                         m = find_mass(N, N_b, passes, shell_passes, L)
                         if m < M:
+                            # print(year, Tmethod, N, N_b, passes, shell_passes, arrange, L)
                             outcome = solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L)
                             # find solution for effectiveness
                             design_dict.update({d_parameters: outcome})
@@ -80,15 +82,25 @@ def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1
                             raise ValueError("invalid mass")
     return design_dict
 
+def test_previous(L, N, N_b, passes = [1], shell_passes = [1], arrange = "tri", Tmethod = "ntu", year = [2025]):
+    test_dict = {}
+    for i in range(len(L)):
+        d_parameters = (N[i], N_b[i], passes[i], shell_passes[i], arrange, L[i])
+        outcome = solution(year[i], Tmethod, N[i], N_b[i], passes[i], shell_passes[i], arrange, L[i])
+        test_dict.update({d_parameters: outcome})
+    return test_dict   
+
+
+
 
 def find_best(design_dict):
     design_list = design_dict.items()
-    print(design_list)
+    # print(design_list)
     best_design = 0
     for design in design_list:
         # search for highest effectiveness
         outcome = design[1]
-        print(outcome)
+        # print(outcome)
         if outcome == "too heavy":
             print("too heavy")
         elif outcome > best_design:
@@ -96,12 +108,18 @@ def find_best(design_dict):
     return best_design
 
 
-L = [0.150]
-N = [18]
-N_b = [12]
-design_dict = test_all(L, N, N_b, [4], [2], year=2023)
-print(design_dict)
+L = [.264, .150, .150, .236, .236, .260, .260, .210, .210, .250, .250, .163, .163]
+N = [12, 18, 18, 10, 10, 12, 12, 16, 16, 12, 12, 20, 20]
+passes = [2, 4, 4, 2, 2, 2, 2, 1, 1, 2, 2, 4, 4]
+shell_passes = [1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2]
+N_b = [8, 12, 12, 8, 8, 11, 11, 6, 6, 8, 8, 6, 6]
+year = [2024, 2023, 2023, 2023, 2023, 2023, 2023, 2022, 2022, 2022, 2022, 2022, 2022]
+# Y = [0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012, 0.012]
+
+# design_dict = test_all(L, N, N_b, passes, shell_passes, year=2023)
+# print(design_dict)
 # print(find_best(design_dict))
+print(test_previous(L, N, N_b, passes, shell_passes, year = year))
 
 
 # fork test
