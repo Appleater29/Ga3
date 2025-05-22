@@ -29,6 +29,7 @@ def NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, N, L,c = 0.15, passes = 1, shell_
         eff = (((1-eff1*C_r)/(1-eff1))**shell_passes - 1)/(((1-eff1*C_r)/(1-eff1))**shell_passes -C_r)
     else:
         raise ValueError("Incorrect NTU parameters")
-    return eff
+    Qdot = eff*C_max*(T2_in - T1_in)
+    return eff, Qdot
 
 # print(NTU_method(0.5, 0.47, 15281, 11283*0.47/0.45, N, L))

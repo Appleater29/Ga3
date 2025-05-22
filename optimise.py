@@ -1,11 +1,11 @@
-from hydraulic import hydraulic_cold, hydraulic_hot, hydraulic_iteration
+from hydraulic import hydraulic_cold_Kern, hydraulic_hot_Kern, hydraulic_iteration
 from LMTD import log_thermal
 from NTU import NTU_method, find_C_r
 import numpy as np
 
 
 def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
-    if arrange == "triangular":
+    if arrange == "tri":
         c = 0.15
         a = 0.2
     elif arrange == "sqaure":
@@ -14,19 +14,20 @@ def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
     else:
         raise ValueError("invalid arrangement of pipes")
     mdot_1 = hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, 0.05, 0.65, side="cold")
-    print("mass flow rate 1:", mdot_1)
     mdot_2 = hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, 0.05, 0.65, side="hot")
-    print("mass flow rate 2:", mdot_2)
-    Re_sh = hydraulic_cold(mdot_1, N, N_b, L, a, shell_passes)[1]
-    Re_tube = hydraulic_hot(mdot_2, N, L, passes, shell_passes)[1]
+    Re_sh = hydraulic_cold_Kern(mdot_1, N, N_b, L, shell_passes, layout=arrange)[1]
+    Re_tube = hydraulic_hot_Kern(mdot_2, N, L, passes, shell_passes)[1]
     if Tmethod == "ntu":
-        eff = NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, passes, shell_passes)
+        outcome = NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, passes, shell_passes)
+        eff = outcome[0]
+        Qdot = outcome[1]
+
     elif Tmethod == "lmtd":
         # ignore passes and shell passes for now
         eff = log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c)[4]
     else:
         raise ValueError("method not available")
-    return eff
+    return eff, Qdot
     
 
 def find_mass(N, N_b, passes, shell_passes, L):
@@ -61,7 +62,7 @@ def find_mass(N, N_b, passes, shell_passes, L):
     return m
 
 
-def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1], arrange = "triangular",Tmethod = "ntu", M = 1.2, year = 2025):
+def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1], arrange = "tri",Tmethod = "ntu", M = 1.2, year = 2025):
     design_dict = {}
     for N in N_list:
         for N_b in N_b_list:
@@ -82,26 +83,34 @@ def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1
 
 
 def find_best(design_dict):
-    design_list = design_dict.items()
-    print(design_list)
-    best_design = 0
+    design_list = list(design_dict.items())
+    best_design = design_list[0]
     for design in design_list:
-        # search for highest effectiveness
-        outcome = design[1]
-        print(outcome)
+        # search for highest heat transfer
+        outcome = float(design[1][1])
         if outcome == "too heavy":
             print("too heavy")
-        elif outcome > best_design:
+        elif outcome > float(best_design[1][1]):
             best_design = design
     return best_design
 
+L = np.linspace(0.05, 0.25, num = 10).tolist()
+N = np.linspace(1, 30, num = 30).tolist()
+N_b = np.linspace(0, 20, num =21).tolist()
+passes = np.linspace(1, 6, num =6).tolist()
+# shell_passes =  [1, 2]
+# passes = [5]
+shell_passes = [1,2]
 
-L = [0.150]
-N = [18]
-N_b = [12]
-design_dict = test_all(L, N, N_b, [4], [2], year=2023)
-print(design_dict)
-# print(find_best(design_dict))
+
+# print(N)
+# print(L)
+# L = [0.150]
+# N = [18]
+# N_b = [12]
+design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025)
+# print(design_dict)
+print(find_best(design_dict))
 
 
 # fork test
