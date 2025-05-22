@@ -37,7 +37,7 @@ def find_mass(N, N_b, passes, shell_passes, L):
     V_endcaps = 2*np.pi*((0.07/2)**2)*0.002
     rho_plastic = 1150
     m_endcaps = V_endcaps*rho_plastic
-    V_tubesheets = V_endcaps*9/2 - N*(np.pi*(0.008/2)**2)
+    V_tubesheets = V_endcaps*9/2 - N*(0.009*np.pi*(0.008/2)**2)
     m_tubesheets = V_tubesheets*rho_plastic
     m_o_rings = 0.0008*2*N + 6*0.0053
     m_baffles = N_b*2.39*0.8*np.pi*(0.064/2)**2
@@ -56,8 +56,6 @@ def find_mass(N, N_b, passes, shell_passes, L):
     m_other = 0.01
     m = m_tubes + m_nozzles + m_shell + m_endcaps + m_tubesheets + m_o_rings + m_baffles +  m_splitters + m_other
     # print(m_baffles, m_endcaps, m_nozzles, m_o_rings, m_other, m_shell, m_splitters, m_tubes, m_tubesheets)
-    # m = 0.5
-    # print(m)
     return m
 
 
