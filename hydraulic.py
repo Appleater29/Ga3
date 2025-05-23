@@ -24,7 +24,6 @@ def hydraulic_cold_old(m1_dot, N, N_b, L, shell_passes, layout="tri"):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
-    print(delta_p_1)
 
     return(delta_p_1, Re_sh)
 
@@ -39,7 +38,7 @@ def hydraulic_cold_Kern(m1_dot, N, N_b, L, shell_passes, layout="tri"):
     elif layout == "tri":
         D_e = (4 * ((Y**2 * np.sqrt(3) / 4) - (np.pi * d_o**2 / 8))) / (np.pi * d_o / 2)
     else:
-        raise ValueError("Layout must be 'square' or 'triangular'")
+        raise ValueError("Layout must be 'square' or 'tri'")
     
     Re_sh = rho_w * v_sh * D_e / mu
 
@@ -56,7 +55,6 @@ def hydraulic_cold_Kern(m1_dot, N, N_b, L, shell_passes, layout="tri"):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
     
     delta_p_1 = delta_p_sh + delta_p_noz1 + delta_p_hose
-    print(delta_p_1)
 
     return(delta_p_1, Re_sh)
 
@@ -79,7 +77,6 @@ def hydraulic_hot_old(m2_dot, N, L, passes, shell_passes):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_2 = (delta_p_tube + delta_p_ends) * passes + delta_p_noz2 + delta_p_hose
-    print(delta_p_2)
 
     return(delta_p_2, Re_tube)
 
@@ -101,7 +98,6 @@ def hydraulic_hot_Kern(m2_dot, N, L, passes, shell_passes):
     delta_p_hose = 0.5 * rho_w * v_hose**2 * k_hose
 
     delta_p_2 = delta_p_tot + delta_p_noz2 + delta_p_hose
-    print(delta_p_2)
 
     return(delta_p_2, Re_tube)
 
@@ -149,10 +145,17 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
     
     B = L / (N_b + 1)
 
+    if a == 0.2:
+        arrange = 'tri'
+    elif a == 0.34:
+        arrange = 'square'
+    else:
+        raise ValueError("Needs to be triangular or circular")
+
     # Define the appropriate error function
     if side == "cold":
         def error(x):
-            delta_p = hydraulic_cold_Kern(x, N, N_b, L, a, shell_passes)[0]
+            delta_p = hydraulic_cold_Kern(x, N, N_b, L, shell_passes, layout=arrange)[0]
             return(delta_p - cold_chic(x, year))
     elif side == "hot":
         def error(x):
@@ -184,15 +187,6 @@ def hydraulic_iteration(year, N, N_b, L, a, passes, shell_passes, x_min, x_max, 
             f_max = f_mid
         else:
             return x_mid  # Exact root found
-    delta_p = hydraulic_cold_Kern(x_mid, N, N_b, L, a, shell_passes)[0]
-    print("hot pressure:", delta_p)
+    delta_p = hydraulic_cold_Kern(x_mid, N, N_b, L, shell_passes, layout = arrange)[0]
 
     return 0.5 * (x_min + x_max)
-
-# m1_dot = hydraulic_iteration(0.05, 0.65, side="cold")
-# m2_dot = hydraulic_iteration(0.05, 0.65, side="hot")
-
-# delta_p_1, Re_sh = hydraulic_cold(m1_dot)
-# delta_p_2, Re_tube = hydraulic_hot(m2_dot)
-
-# print(m1_dot, m2_dot, Re_sh, Re_tube, delta_p_1, delta_p_2)
