@@ -44,7 +44,7 @@ def hydraulic_cold_Kern(m1_dot, N, N_b, L, shell_passes, layout="tri"):
 
     G_s = m1_dot / A_sh
     f = np.exp(0.576 - 0.19 * np.log(Re_sh))
-    delta_p_sh = f * G_s**2 * (N_b  + 1) * d_sh / (2 * rho_w * D_e)
+    delta_p_sh = f * G_s**2 * (N_b*shell_passes  + 1) * d_sh / (2 * rho_w * D_e)
 
     v_noz1 = m1_dot / (rho_w * A_noz)
     delta_p_noz1 = rho_w * v_noz1**2
