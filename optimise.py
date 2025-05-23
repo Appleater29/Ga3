@@ -108,5 +108,5 @@ shell_passes = [1,2]
 
 design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "lmtd")
 # print(design_dict)
-print(find_best(design_dict))
-
+best = find_best(design_dict)
+print("N:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
