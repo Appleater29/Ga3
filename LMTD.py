@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+
 
 from fixed_constants import *
 
@@ -43,14 +44,14 @@ def correction_factor(T1_out, shell_passes):
             y0, y1 = f_vals[i - 1], f_vals[i]
             return y0 + (y1 - y0) * (x - x0) / (x1 - x0) 
 
-def fT1_out(T1_out, H, A, mdot_1, mdot_2):
-        CF = correction_factor(T1_out)
+def fT1_out(T1_out, H, A, mdot_1, mdot_2, shell_passes):
+        CF = correction_factor(T1_out, shell_passes)
         T2_out = T2_in - (mdot_1/mdot_2)*(T1_out-T1_in)
         T_lm = logmtemp(T1_out, T2_out)
         return mdot_1*cp*(T1_out-T1_in)-H*A*T_lm*CF
 
 
-def log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c=0.15):
+def log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c=0.15, shell_passes = 1):
     A = (np.pi)*N*d_i*L
     H = find_H(Re_sh, Re_tube, L, c)
     T1_out_max = T2_in - 5
@@ -60,27 +61,29 @@ def log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c=0.15):
     if T1_out_max == T1_out_min:
         print("Temperatures too close")
 
-    while T1_out_max - T1_out_min > 0.0001:
+    while T1_out_max - T1_out_min > 0.001:
         T1_out_mid = (T1_out_min + T1_out_max)/2  
-        f_max = fT1_out(T1_out_max, H, A, mdot_1, mdot_2)
-        f_min = fT1_out(T1_out_min, H, A, mdot_1, mdot_2)
-        f_mid = fT1_out(T1_out_mid, H, A, mdot_1, mdot_2)
+        f_max = fT1_out(T1_out_max, H, A, mdot_1, mdot_2, shell_passes)
+        f_min = fT1_out(T1_out_min, H, A, mdot_1, mdot_2, shell_passes)
+        f_mid = fT1_out(T1_out_mid, H, A, mdot_1, mdot_2, shell_passes)
         if np.sign(f_max) == np.sign(f_min):
-             print("error - no root in interval")
+            #  print("error - no root in interval")
              break
         elif np.sign(f_mid) == np.sign(f_min):
              T1_out_min = T1_out_mid
         elif np.sign(f_max) == np.sign(f_mid):
              T1_out_max = T1_out_mid
         else:
-             print("error - two roots in interval")
+            #  print("error - two roots in interval")
              break
 
     T1_out = T1_out_mid
     T2_out = T2_in - (mdot_1/mdot_2)*(T1_out-T1_in)
     T_lm = logmtemp(T1_out, T2_out)
+    # C_min = min(mdot_1, mdot_2) * cp
+    C_max = max(mdot_1, mdot_2) * cp
     Qdot = mdot_1*cp*(T1_out - T1_in)
-    eff = Qdot/(mdot_2 * cp*(T2_in - T1_in))
+    eff = Qdot/(C_max*(T2_in - T1_in))
 
     # plotting
     # x = np.linspace(-100, 100, 1000)
