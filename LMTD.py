@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+
 
 from fixed_constants import *
 
@@ -79,8 +80,10 @@ def log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c=0.15, shell_passes = 1):
     T1_out = T1_out_mid
     T2_out = T2_in - (mdot_1/mdot_2)*(T1_out-T1_in)
     T_lm = logmtemp(T1_out, T2_out)
+    # C_min = min(mdot_1, mdot_2) * cp
+    C_max = max(mdot_1, mdot_2) * cp
     Qdot = mdot_1*cp*(T1_out - T1_in)
-    eff = Qdot/(mdot_2 * cp*(T2_in - T1_in))
+    eff = Qdot/(C_max*(T2_in - T1_in))
 
     # plotting
     # x = np.linspace(-100, 100, 1000)

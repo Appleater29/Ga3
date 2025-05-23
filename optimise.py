@@ -87,11 +87,12 @@ def find_best(design_dict):
     design_list = list(design_dict.items())
     best_design = design_list[0]
     for design in design_list:
-        print(design)
+        # print(design)
         # search for highest heat transfer
         outcome = design[1][1]
         if outcome == "o":
-            print("too heavy")
+            # print("too heavy")
+            pass
         elif outcome > float(best_design[1][1]):
             best_design = design
     return best_design
