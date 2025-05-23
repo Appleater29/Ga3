@@ -15,7 +15,8 @@ d_i = 0.006 # meters
 d_noz = 0.02 # meters
 d_sh = 0.064 # meters
 # L = 0.35 # meters
-Y = 0.012 # meters (can also times 1.25)
+# Y = 0.012 # meters (can also times 1.25)
+Y = 0.013 # meters (can also times 1.25)
 # optimal baffle spacing should be between 0.4 and 0.6 of d_sh
 # optimal baffle cut should be between 0.25 and 0.35
 
