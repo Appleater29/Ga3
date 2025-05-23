@@ -73,8 +73,10 @@ def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1
                         d_parameters = (N, N_b, passes, shell_passes, arrange, L)
                         m = find_mass(N, N_b, passes, shell_passes, L)
                         if m < M:
-                            outcome = solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L)
-                            # find solution for effectiveness
+                            if d_parameters[0] < d_parameters[2]:
+                                outcome = "more passes than tubes"
+                            else:
+                                outcome = solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L)
                             design_dict.update({d_parameters: outcome})
                         elif m >= M:
                             design_dict.update({d_parameters: "too heavy"})
@@ -85,37 +87,26 @@ def test_all(L_list, N_list, N_b_list, passes_list = [1], shell_passes_list = [1
 
 def find_best(design_dict):
     design_list = list(design_dict.items())
-    best_design = design_list[0]
+    best_design = ((0,0,0,0,0,0), (0,0))
     for design in design_list:
         # print(design)
         # search for highest heat transfer
         outcome = design[1][1]
         if outcome == "o":
-            # print("too heavy")
             pass
         elif outcome > float(best_design[1][1]):
             best_design = design
     return best_design
 
-L = np.linspace(0.05, 0.25, num = 10).tolist()
+# L = np.linspace(0.05, 0.25, num = 10).tolist()
+L = [0.25]
 N = np.linspace(1, 30, num = 30).tolist()
 N_b = np.linspace(0, 20, num =21).tolist()
-passes = np.linspace(1, 6, num =6).tolist()
-# shell_passes =  [1, 2]
-# passes = [5]
+# passes = np.linspace(1, 6, num =6).tolist()
+passes = [4]
 shell_passes = [1,2]
 
-
-# print(N)
-# print(L)
-# L = [0.150]
-# N = [18]
-# N_b = [12]
 design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "lmtd")
 # print(design_dict)
 print(find_best(design_dict))
-
-
-# fork test
-
 
