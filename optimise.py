@@ -24,7 +24,10 @@ def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
 
     elif Tmethod == "lmtd":
         # ignore passes and shell passes for now
-        eff = log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c)[4]
+        outcome = log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c, shell_passes)
+        # print(outcome)
+        eff = outcome[4]
+        Qdot = outcome[3]
     else:
         raise ValueError("method not available")
     return eff, Qdot
@@ -84,9 +87,10 @@ def find_best(design_dict):
     design_list = list(design_dict.items())
     best_design = design_list[0]
     for design in design_list:
+        print(design)
         # search for highest heat transfer
-        outcome = float(design[1][1])
-        if outcome == "too heavy":
+        outcome = design[1][1]
+        if outcome == "o":
             print("too heavy")
         elif outcome > float(best_design[1][1]):
             best_design = design
@@ -106,7 +110,7 @@ shell_passes = [1,2]
 # L = [0.150]
 # N = [18]
 # N_b = [12]
-design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025)
+design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "lmtd")
 # print(design_dict)
 print(find_best(design_dict))
 
