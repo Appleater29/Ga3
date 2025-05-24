@@ -1,9 +1,9 @@
 import numpy as np
 # fixed variables
 # T1_in = 20 # degrees
-T1_in = 19.8 # degrees
+T1_in = 20 # degrees
 # T2_in = 60 # degrees 
-T2_in = 51.7 # degrees 
+T2_in = 60 # degrees 
 cp = 4179 # J/kgK
 rho_w = 990.1 # kg/ms
 k_w = 0.632 # W/mK
