@@ -3,14 +3,6 @@ from LMTD import find_H
 from fixed_constants import *
 
 
-# N = 13
-# L = 0.35
-
-def find_C_r(mdot_1, mdot_2):
-    C_min = min(mdot_1, mdot_2) * cp
-    C_max = max(mdot_1, mdot_2) * cp
-    return C_min / C_max
-
 def NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, N, L,c = 0.15, passes = 1, shell_passes = 1):
     C_min = min(mdot_1, mdot_2) * cp
     C_max = max(mdot_1, mdot_2) * cp
@@ -29,7 +21,5 @@ def NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, N, L,c = 0.15, passes = 1, shell_
         eff = (((1-eff1*C_r)/(1-eff1))**shell_passes - 1)/(((1-eff1*C_r)/(1-eff1))**shell_passes -C_r)
     else:
         raise ValueError("Incorrect NTU parameters")
-    Qdot = eff*C_max*(T2_in - T1_in)
+    Qdot = eff*C_min*(T2_in - T1_in)
     return eff, Qdot
-
-# print(NTU_method(0.5, 0.47, 15281, 11283*0.47/0.45, N, L))

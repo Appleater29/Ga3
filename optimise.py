@@ -1,7 +1,8 @@
 from hydraulic import hydraulic_cold_Kern, hydraulic_hot_Kern, hydraulic_iteration
 from LMTD import log_thermal
-from NTU import NTU_method, find_C_r
+from NTU import NTU_method
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
@@ -18,14 +19,12 @@ def solution(year, Tmethod, N, N_b, passes, shell_passes, arrange, L):
     Re_sh = hydraulic_cold_Kern(mdot_1, N, N_b, L, shell_passes, layout=arrange)[1]
     Re_tube = hydraulic_hot_Kern(mdot_2, N, L, passes, shell_passes)[1]
     if Tmethod == "ntu":
-        outcome = NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, passes, shell_passes)
+        outcome = NTU_method(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c, passes, shell_passes)
         eff = outcome[0]
         Qdot = outcome[1]
 
     elif Tmethod == "lmtd":
-        # ignore passes and shell passes for now
         outcome = log_thermal(mdot_1, mdot_2, Re_sh, Re_tube, N, L, c, shell_passes)
-        # print(outcome)
         eff = outcome[4]
         Qdot = outcome[3]
     else:
@@ -60,6 +59,7 @@ def find_mass(N, N_b, passes, shell_passes, L):
     m_other = 0.01
     m = m_tubes + m_nozzles + m_shell + m_endcaps + m_tubesheets + m_o_rings + m_baffles +  m_splitters + m_other
     # print(m_baffles, m_endcaps, m_nozzles, m_o_rings, m_other, m_shell, m_splitters, m_tubes, m_tubesheets)
+    # print(m,N,N_b,shell_passes, passes, L)
     return m
 
 
@@ -98,15 +98,32 @@ def find_best(design_dict):
             best_design = design
     return best_design
 
-# L = np.linspace(0.05, 0.25, num = 10).tolist()
-L = [0.25]
+# L = np.linspace(0.15, 0.25, num = 10).tolist()
+
+L = [0.15,0.2,0.25]
 N = np.linspace(1, 30, num = 30).tolist()
-N_b = np.linspace(0, 20, num =21).tolist()
+# N_b = np.linspace(0, 50, num =51).tolist()
+N_b = np.linspace(0, 19, num =20).tolist()
 # passes = np.linspace(1, 6, num =6).tolist()
-passes = [4]
+passes = [ 1,2]
 shell_passes = [1,2]
 
-design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "lmtd")
-# print(design_dict)
+# design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "lmtd")
+# # print(design_dict)
+# best = find_best(design_dict)
+# print("------------LMTD method-------------", "\nN:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
+design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "ntu")
 best = find_best(design_dict)
-print("N:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
+print("------------E-NTU method------------", "\nN:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
+
+# print(solution(2025, "lmtd", 1, 1, 1, 1,'tri', 0.25 ))
+# print(solution(2025, "ntu", 16, 6, 2, 2,'tri', 0.2 ))
+# print(solution(2025, "ntu", 12, 8, 2, 2,'tri', 0.25 ))
+# N_b_graph = []
+# for i in range(len(N_b)):
+#     sol = solution(2025, "ntu", 12, N_b[i],2,2,'tri',0.25)[1]
+#     print(sol)
+#     N_b_graph += [sol]
+
+# plt.plot(N_b,N_b_graph)
+# plt.show()
