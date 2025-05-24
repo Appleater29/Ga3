@@ -102,7 +102,8 @@ def find_best(design_dict):
 
 L = [0.15,0.2,0.25]
 N = np.linspace(1, 30, num = 30).tolist()
-N_b = np.linspace(0, 50, num =51).tolist()
+# N_b = np.linspace(0, 50, num =51).tolist()
+N_b = np.linspace(0, 19, num =20).tolist()
 # passes = np.linspace(1, 6, num =6).tolist()
 passes = [ 1,2]
 shell_passes = [1,2]
@@ -111,18 +112,18 @@ shell_passes = [1,2]
 # # print(design_dict)
 # best = find_best(design_dict)
 # print("------------LMTD method-------------", "\nN:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
-# design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "ntu")
-# best = find_best(design_dict)
-# print("------------E-NTU method------------", "\nN:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
+design_dict = test_all(L, N, N_b, passes, shell_passes, year=2025, Tmethod= "ntu")
+best = find_best(design_dict)
+print("------------E-NTU method------------", "\nN:",best[0][0], "\nN_b:",best[0][1], "\npasses:", best[0][2], "\nshell_passes:", best[0][3],  "\narrange:", best[0][4], "\nL:", best[0][5], "\neff:", float(best[1][0]), "\nQdot:",float(best[1][1]) )
 
 # print(solution(2025, "lmtd", 1, 1, 1, 1,'tri', 0.25 ))
 # print(solution(2025, "ntu", 16, 6, 2, 2,'tri', 0.2 ))
 # print(solution(2025, "ntu", 12, 8, 2, 2,'tri', 0.25 ))
-N_b_graph = []
-for i in range(len(N_b)):
-    sol = solution(2025, "ntu", 12, N_b[i],2,2,'tri',0.25)[1]
-    print(sol)
-    N_b_graph += [sol]
+# N_b_graph = []
+# for i in range(len(N_b)):
+#     sol = solution(2025, "ntu", 12, N_b[i],2,2,'tri',0.25)[1]
+#     print(sol)
+#     N_b_graph += [sol]
 
-plt.plot(N_b,N_b_graph)
-plt.show()
+# plt.plot(N_b,N_b_graph)
+# plt.show()
